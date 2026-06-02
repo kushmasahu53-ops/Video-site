@@ -4,6 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video - VideoZone</title>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DYCJC4TZNM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DYCJC4TZNM');
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -82,6 +90,10 @@
       margin-bottom: 20px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
+    }
+    .view-count {
+      color: var(--accent);
+      font-weight: 700;
     }
     .video-desc {
       background: var(--card);
@@ -181,7 +193,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, getDoc, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, getDoc as gd, updateDoc, increment, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBvs0Nofybzj7l-gMAaJmMgE0DF8TurjTs",
@@ -220,6 +232,12 @@
         const v = docSnap.data();
         document.title = (v.title || 'Video') + ' - VideoZone';
 
+        // View count increment
+        try {
+          await updateDoc(doc(db, 'videos', videoId), { views: increment(1) });
+        } catch(e) {}
+        const views = (v.views || 0) + 1;
+
         // Load related videos
         const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(7));
         const snap = await getDocs(q);
@@ -251,6 +269,7 @@
           <div class="video-meta">
             <span>📅 ${timeAgo(v.createdAt)}</span>
             ${v.duration ? `<span>⏱ ${v.duration}</span>` : ''}
+            <span class="view-count">👁 ${views} views</span>
           </div>
 
           ${v.description ? `<div class="video-desc">${v.description}</div>` : ''}
